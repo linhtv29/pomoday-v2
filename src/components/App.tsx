@@ -12,7 +12,6 @@ import {
   TaskStatus,
 } from '../helpers/utils';
 import { InputBox } from './InputBox';
-import { GoogleAnalytics } from './GoogleAnalytics';
 import { CodeEditor } from './CodeEditor';
 import { ArchivedList } from './ArchivedList';
 import { HelpDialog } from './HelpDialog';
@@ -85,7 +84,7 @@ const tutorialTasks: TaskItem[] = [
 ];
 
 const defaultState = {
-  tasks: tutorialTasks,
+  tasks: [],
   showHelp: false,
   showQuickHelp: true,
   showToday: false,
@@ -432,7 +431,6 @@ export const App = () => {
         </div>
         <InputBox />
       </div>
-      <GoogleAnalytics />
     </StateContext.Provider>
   );
 };

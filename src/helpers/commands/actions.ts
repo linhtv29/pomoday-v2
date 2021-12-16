@@ -203,7 +203,7 @@ export function restoreCommand(ids, cmd, tasksToUpdate: any, state) {
 }
 
 export function insertTaskCommand(cmd, state, tasksToUpdate: any) {
-  const tag = cmd.tag || '@uncategorized';
+  const tag = cmd.tag || '@todo';
   const task = cmd.text;
   if (task && task.length) {
     const nextId = state.tasks.reduce((maxId: number, t: TaskItem) => {
