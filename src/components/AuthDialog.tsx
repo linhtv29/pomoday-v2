@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { StateContext } from './App';
 import { KEY_ESC } from '../helpers/utils';
-import { authenticateUser } from '../helpers/api';
 import { useEventListener } from '../helpers/hooks';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../helpers/firebaseConfig';
 
 enum UIAuthState {
   WAIT,
@@ -17,7 +18,6 @@ export const AuthDialog = props => {
   });
   const usernameRef = React.useRef(null);
   const passwordRef = React.useRef(null);
-  const serverRef = React.useRef(null);
 
   React.useEffect(() => {
     if (usernameRef && usernameRef.current) {
@@ -30,23 +30,23 @@ export const AuthDialog = props => {
       usernameRef && usernameRef.current && usernameRef.current.value;
     const password =
       passwordRef && passwordRef.current && passwordRef.current.value;
-    const server = serverRef && serverRef.current && serverRef.current.value;
-    if (username && password && server) {
+    if (username && password) {
       setUIState({
         status: UIAuthState.LOADING,
         errorMessage: '',
       });
-      authenticateUser(username, password, server)
-        .then(authToken => {
+      signInWithEmailAndPassword(auth, username, password)
+        .then(auth => {
+          const user = auth.user;
+          console.log(user);
           setState({
             ...state,
-            authToken: authToken,
+            authToken: user.accessToken,
             userName: username,
             userWantToLogin: false,
-            serverUrl: server,
           });
         })
-        .catch(() => {
+        .catch(err => {
           setUIState({
             status: UIAuthState.WAIT,
             errorMessage:
@@ -94,7 +94,7 @@ export const AuthDialog = props => {
           </div>
           <div className={'p-3 inline-block'}>
             <div className={'my-2 flex flex-row'}>
-              <span className={'w-4/12'}>Username:</span>
+              <span className={'w-4/12'}>Email:</span>
               <input
                 tabIndex={1}
                 ref={usernameRef}
@@ -109,16 +109,6 @@ export const AuthDialog = props => {
                 ref={passwordRef}
                 className={'border border-stall-dim flex-1 ml-2'}
                 type={'password'}
-              />
-            </div>
-            <div className={'my-2 flex flex-row'}>
-              <span className={'w-4/12'}>Server:</span>
-              <input
-                tabIndex={3}
-                ref={serverRef}
-                className={'border border-stall-dim flex-1 ml-2'}
-                type={'text'}
-                defaultValue={process.env.API_URL || ''}
               />
             </div>
             <div className={'my-2 float-right'}>
