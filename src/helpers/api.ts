@@ -1,3 +1,4 @@
+const baseApi = process.env.BASE_API || 'http://localhost:8080/api';
 export const pullFromDB = (server, token) => {
   const url = server.replace(/\/$/, '') + '/list';
   return fetch(url, {
@@ -29,17 +30,34 @@ export const pushToDB = (tasks, server, token) => {
   }).then(r => r.json());
 };
 
-export const authenticateUser = (username, password, server) => {
-  const url = server.replace(/\/$/, '') + '/list';
-  const token = btoa(`${username}:${password}`);
-  const auth = `Basic ${token}`;
+export const authenticateUser = (userName, password) => {
+  const url = baseApi + '/auth/login';
+  const data = JSON.stringify({
+    userName,
+    password,
+  });
   return fetch(url, {
     headers: {
-      Authorization: auth,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
-  })
-    .then(r => r.json())
-    .then(() => {
-      return token;
-    });
+    method: 'POST',
+    body: data,
+  }).then(r => r.json());
+};
+
+export const registerUser = (userName, password) => {
+  const url = baseApi + '/auth/register';
+  const data = JSON.stringify({
+    userName,
+    password,
+  });
+  return fetch(url, {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: data,
+  }).then(r => r.json());
 };

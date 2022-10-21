@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { StateContext } from './App';
 import { KEY_ESC } from '../helpers/utils';
-import { authenticateUser } from '../helpers/api';
+import { authenticateUser, registerUser } from '../helpers/api';
 import { useEventListener } from '../helpers/hooks';
 
 enum UIAuthState {
@@ -14,6 +14,7 @@ export const AuthDialog = props => {
   const [uiState, setUIState] = React.useState({
     status: UIAuthState.WAIT,
     errorMessage: '',
+    successMessage: '',
   });
   const usernameRef = React.useRef(null);
   const passwordRef = React.useRef(null);
@@ -37,17 +38,40 @@ export const AuthDialog = props => {
         setUIState({
           status: UIAuthState.WAIT,
           errorMessage: "Password don't match!",
+          successMessage: '',
         });
         return;
       }
       setUIState({
         status: UIAuthState.LOADING,
         errorMessage: '',
+        successMessage: '',
       });
+      registerUser(username, password)
+        .then(() => {
+          setState({
+            ...state,
+            userWantToRegister: false,
+          });
+          setUIState({
+            status: UIAuthState.WAIT,
+            errorMessage: '',
+            successMessage: 'Register completed, please login!',
+          });
+        })
+        .catch(() => {
+          setUIState({
+            status: UIAuthState.WAIT,
+            errorMessage:
+              'Failed to register. Please check your username, password, then try again.',
+            successMessage: '',
+          });
+        });
     } else {
       setUIState({
         status: UIAuthState.WAIT,
         errorMessage: 'Please fill out all the information above.',
+        successMessage: '',
       });
     }
   };
@@ -61,12 +85,14 @@ export const AuthDialog = props => {
       setUIState({
         status: UIAuthState.LOADING,
         errorMessage: '',
+        successMessage: '',
       });
-      authenticateUser(username, password, null)
-        .then(authToken => {
+      authenticateUser(username, password)
+        .then(res => {
+          const { authToken } = res;
           setState({
             ...state,
-            authToken: authToken,
+            authToken,
             userName: username,
             userWantToLogin: false,
           });
@@ -76,12 +102,14 @@ export const AuthDialog = props => {
             status: UIAuthState.WAIT,
             errorMessage:
               'Failed to login. Please check your username, password and server, then try again.',
+            successMessage: '',
           });
         });
     } else {
       setUIState({
         status: UIAuthState.WAIT,
         errorMessage: 'Please fill out all the information above.',
+        successMessage: '',
       });
     }
   };
@@ -170,7 +198,11 @@ export const AuthDialog = props => {
               )}
             </div>
           </div>
-          <div className={'p-3 text-tomato'}>{uiState.errorMessage}</div>
+          {uiState.errorMessage ? (
+            <div className={'p-3 text-tomato'}>{uiState.errorMessage}</div>
+          ) : uiState.successMessage ? (
+            <div className={'p-3 text-green'}>{uiState.successMessage}</div>
+          ) : null}
           <div className={'p-3'}>
             {state.userWantToRegister
               ? ''
