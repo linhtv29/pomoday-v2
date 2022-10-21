@@ -418,6 +418,12 @@ export function otherCommand(updateCandidate, cmd, state) {
         ),
         userWantToLogin: true,
       };
+    } else if (commandText === 'register') {
+      return {
+        ...updateCandidate,
+        userWantToRegister: true,
+        userWantToLogin: true,
+      };
     } else if (commandText === 'logout') {
       return {
         ...updateCandidate,

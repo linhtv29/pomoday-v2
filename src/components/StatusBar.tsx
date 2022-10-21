@@ -60,7 +60,7 @@ export const StatusBar = props => {
                   <path d="M13,8 L13,0 L3,12 L7,12 L7,20 L17,8 L13,8 Z"></path>
                 </svg>
               </a>
-              <a
+              {/* <a
                 className="block flex items-center hover:text-gray-700 ml-4"
                 title={'Source code'}
                 target={'_blank'}
@@ -105,7 +105,7 @@ export const StatusBar = props => {
                     </g>
                   </g>
                 </svg>
-              </a>
+              </a> */}
               <a
                 className="flex items-center hover:text-gray-700 cursor-pointer ml-4"
                 title={'Setting'}

@@ -107,11 +107,13 @@ const defaultState = {
   customCSS: '',
   showArchived: false,
   userWantToLogin: false,
+  userWantToRegister: false,
   authToken: '',
   userName: '',
   serverUrl: '',
   lastSync: 0,
   filterBy: '',
+  userId: '',
 };
 
 const getInitialState = () => {
