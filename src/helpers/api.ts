@@ -1,15 +1,15 @@
 const baseApi = process.env.BASE_API || 'http://localhost:8080/api';
-export const pullFromDB = (server, token) => {
-  const url = server.replace(/\/$/, '') + '/list';
+export const pullFromDB = token => {
+  const url = baseApi + '/tasks';
   return fetch(url, {
     headers: {
-      Authorization: `Basic ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   }).then(r => r.json());
 };
 
-export const pushToDB = (tasks, server, token) => {
-  const url = server.replace(/\/$/, '') + '/list';
+export const pushToDB = (tasks, token) => {
+  const url = baseApi + '/tasks';
   const data = JSON.stringify({
     tasks: tasks.map(t => ({
       // This is a fallback layer for legacy version of Pomoday
@@ -23,7 +23,7 @@ export const pushToDB = (tasks, server, token) => {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      Authorization: `Basic ${token}`,
+      Authorization: `Bearer ${token}`,
     },
     method: 'PUT',
     body: data,

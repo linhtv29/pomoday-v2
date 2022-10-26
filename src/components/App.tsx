@@ -148,11 +148,7 @@ const syncTasks = async (state, setState, isPull) => {
   if (!isPull) {
     if (state.tasks.length) {
       pushInProgress = true;
-      const data = await pushToDB(
-        state.tasks,
-        state.serverUrl,
-        state.authToken,
-      );
+      const data = await pushToDB(state.tasks, state.authToken);
       pushInProgress = false;
       setState({
         ...state,
@@ -162,7 +158,7 @@ const syncTasks = async (state, setState, isPull) => {
     }
   } else {
     if (!pushInProgress) {
-      const data = await pullFromDB(state.serverUrl, state.authToken);
+      const data = await pullFromDB(state.authToken);
       setState({
         ...state,
         tasks: data.tasks,
