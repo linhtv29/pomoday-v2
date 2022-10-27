@@ -425,6 +425,7 @@ export function otherCommand(updateCandidate, cmd, state) {
         userWantToLogin: true,
       };
     } else if (commandText === 'logout') {
+      if (!updateCandidate.authToken) return updateCandidate;
       return {
         ...updateCandidate,
         authToken: '',

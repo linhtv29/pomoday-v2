@@ -89,9 +89,10 @@ export const AuthDialog = props => {
       });
       authenticateUser(username, password)
         .then(res => {
-          const { authToken } = res;
+          const { authToken, tasks } = res;
           setState({
             ...state,
+            tasks,
             authToken,
             userName: username,
             userWantToLogin: false,
@@ -125,6 +126,16 @@ export const AuthDialog = props => {
   const processKey = e => {
     if (e.keyCode === KEY_ESC) {
       closeDialog();
+    }
+  };
+
+  const handleKeyPress = e => {
+    if (e.key === 'Enter') {
+      if (state.userWantToLogin) {
+        doLogin();
+      } else {
+        doRegister();
+      }
     }
   };
 
@@ -163,6 +174,7 @@ export const AuthDialog = props => {
                 ref={passwordRef}
                 className={'border border-stall-dim flex-1 ml-2'}
                 type={'password'}
+                onKeyPress={handleKeyPress}
               />
             </div>
             {state.userWantToRegister ? (
@@ -173,6 +185,7 @@ export const AuthDialog = props => {
                   ref={rePasswordRef}
                   className={'border border-stall-dim flex-1 ml-2'}
                   type={'password'}
+                  onKeyPress={handleKeyPress}
                 />
               </div>
             ) : null}
