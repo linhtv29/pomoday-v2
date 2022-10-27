@@ -107,11 +107,13 @@ const defaultState = {
   customCSS: '',
   showArchived: false,
   userWantToLogin: false,
+  userWantToRegister: false,
   authToken: '',
   userName: '',
   serverUrl: '',
   lastSync: 0,
   filterBy: '',
+  userId: '',
 };
 
 const getInitialState = () => {
@@ -146,11 +148,7 @@ const syncTasks = async (state, setState, isPull) => {
   if (!isPull) {
     if (state.tasks.length) {
       pushInProgress = true;
-      const data = await pushToDB(
-        state.tasks,
-        state.serverUrl,
-        state.authToken,
-      );
+      const data = await pushToDB(state.tasks, state.authToken);
       pushInProgress = false;
       setState({
         ...state,
@@ -160,7 +158,7 @@ const syncTasks = async (state, setState, isPull) => {
     }
   } else {
     if (!pushInProgress) {
-      const data = await pullFromDB(state.serverUrl, state.authToken);
+      const data = await pullFromDB(state.authToken);
       setState({
         ...state,
         tasks: data.tasks,

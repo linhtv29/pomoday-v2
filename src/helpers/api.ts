@@ -1,14 +1,15 @@
-export const pullFromDB = (server, token) => {
-  const url = server.replace(/\/$/, '') + '/list';
+const baseApi = process.env.BASE_API || 'http://localhost:8080/api';
+export const pullFromDB = token => {
+  const url = baseApi + '/tasks';
   return fetch(url, {
     headers: {
-      Authorization: `Basic ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   }).then(r => r.json());
 };
 
-export const pushToDB = (tasks, server, token) => {
-  const url = server.replace(/\/$/, '') + '/list';
+export const pushToDB = (tasks, token) => {
+  const url = baseApi + '/tasks';
   const data = JSON.stringify({
     tasks: tasks.map(t => ({
       // This is a fallback layer for legacy version of Pomoday
@@ -22,24 +23,41 @@ export const pushToDB = (tasks, server, token) => {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      Authorization: `Basic ${token}`,
+      Authorization: `Bearer ${token}`,
     },
     method: 'PUT',
     body: data,
   }).then(r => r.json());
 };
 
-export const authenticateUser = (username, password, server) => {
-  const url = server.replace(/\/$/, '') + '/list';
-  const token = btoa(`${username}:${password}`);
-  const auth = `Basic ${token}`;
+export const authenticateUser = (userName, password) => {
+  const url = baseApi + '/auth/login';
+  const data = JSON.stringify({
+    userName,
+    password,
+  });
   return fetch(url, {
     headers: {
-      Authorization: auth,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
-  })
-    .then(r => r.json())
-    .then(() => {
-      return token;
-    });
+    method: 'POST',
+    body: data,
+  }).then(r => r.json());
+};
+
+export const registerUser = (userName, password) => {
+  const url = baseApi + '/auth/register';
+  const data = JSON.stringify({
+    userName,
+    password,
+  });
+  return fetch(url, {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: data,
+  }).then(r => r.json());
 };

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { StateContext } from './App';
 import { KEY_ESC } from '../helpers/utils';
-import { authenticateUser } from '../helpers/api';
+import { authenticateUser, registerUser } from '../helpers/api';
 import { useEventListener } from '../helpers/hooks';
 
 enum UIAuthState {
@@ -14,10 +14,11 @@ export const AuthDialog = props => {
   const [uiState, setUIState] = React.useState({
     status: UIAuthState.WAIT,
     errorMessage: '',
+    successMessage: '',
   });
   const usernameRef = React.useRef(null);
   const passwordRef = React.useRef(null);
-  const serverRef = React.useRef(null);
+  const rePasswordRef = React.useRef(null);
 
   React.useEffect(() => {
     if (usernameRef && usernameRef.current) {
@@ -25,25 +26,76 @@ export const AuthDialog = props => {
     }
   }, []);
 
+  const doRegister = () => {
+    const username =
+      usernameRef && usernameRef.current && usernameRef.current.value;
+    const password =
+      passwordRef && passwordRef.current && passwordRef.current.value;
+    const rePassword =
+      rePasswordRef && rePasswordRef.current && rePasswordRef.current.value;
+    if (username && password && rePassword) {
+      if (password !== rePassword) {
+        setUIState({
+          status: UIAuthState.WAIT,
+          errorMessage: "Password don't match!",
+          successMessage: '',
+        });
+        return;
+      }
+      setUIState({
+        status: UIAuthState.LOADING,
+        errorMessage: '',
+        successMessage: '',
+      });
+      registerUser(username, password)
+        .then(() => {
+          setState({
+            ...state,
+            userWantToRegister: false,
+          });
+          setUIState({
+            status: UIAuthState.WAIT,
+            errorMessage: '',
+            successMessage: 'Register completed, please login!',
+          });
+        })
+        .catch(() => {
+          setUIState({
+            status: UIAuthState.WAIT,
+            errorMessage:
+              'Failed to register. Please check your username, password, then try again.',
+            successMessage: '',
+          });
+        });
+    } else {
+      setUIState({
+        status: UIAuthState.WAIT,
+        errorMessage: 'Please fill out all the information above.',
+        successMessage: '',
+      });
+    }
+  };
+
   const doLogin = () => {
     const username =
       usernameRef && usernameRef.current && usernameRef.current.value;
     const password =
       passwordRef && passwordRef.current && passwordRef.current.value;
-    const server = serverRef && serverRef.current && serverRef.current.value;
-    if (username && password && server) {
+    if (username && password) {
       setUIState({
         status: UIAuthState.LOADING,
         errorMessage: '',
+        successMessage: '',
       });
-      authenticateUser(username, password, server)
-        .then(authToken => {
+      authenticateUser(username, password)
+        .then(res => {
+          const { authToken, tasks } = res;
           setState({
             ...state,
-            authToken: authToken,
+            tasks,
+            authToken,
             userName: username,
             userWantToLogin: false,
-            serverUrl: server,
           });
         })
         .catch(() => {
@@ -51,12 +103,14 @@ export const AuthDialog = props => {
             status: UIAuthState.WAIT,
             errorMessage:
               'Failed to login. Please check your username, password and server, then try again.',
+            successMessage: '',
           });
         });
     } else {
       setUIState({
         status: UIAuthState.WAIT,
         errorMessage: 'Please fill out all the information above.',
+        successMessage: '',
       });
     }
   };
@@ -65,12 +119,23 @@ export const AuthDialog = props => {
     setState({
       ...state,
       userWantToLogin: false,
+      userWantToRegister: false,
     });
   };
 
   const processKey = e => {
     if (e.keyCode === KEY_ESC) {
       closeDialog();
+    }
+  };
+
+  const handleKeyPress = e => {
+    if (e.key === 'Enter') {
+      if (state.userWantToLogin) {
+        doLogin();
+      } else {
+        doRegister();
+      }
     }
   };
 
@@ -94,7 +159,7 @@ export const AuthDialog = props => {
           </div>
           <div className={'p-3 inline-block'}>
             <div className={'my-2 flex flex-row'}>
-              <span className={'w-4/12'}>Username:</span>
+              <span className={'w-5/12'}>Username:</span>
               <input
                 tabIndex={1}
                 ref={usernameRef}
@@ -103,40 +168,60 @@ export const AuthDialog = props => {
               />
             </div>
             <div className={'my-2 flex flex-row'}>
-              <span className={'w-4/12'}>Password:</span>
+              <span className={'w-5/12'}>Password:</span>
               <input
                 tabIndex={2}
                 ref={passwordRef}
                 className={'border border-stall-dim flex-1 ml-2'}
                 type={'password'}
+                onKeyPress={handleKeyPress}
               />
             </div>
-            <div className={'my-2 flex flex-row'}>
-              <span className={'w-4/12'}>Server:</span>
-              <input
-                tabIndex={3}
-                ref={serverRef}
-                className={'border border-stall-dim flex-1 ml-2'}
-                type={'text'}
-                defaultValue={process.env.API_URL || ''}
-              />
-            </div>
+            {state.userWantToRegister ? (
+              <div className={'my-2 flex flex-row'}>
+                <span className={'w-5/12'}>Re-password:</span>
+                <input
+                  tabIndex={3}
+                  ref={rePasswordRef}
+                  className={'border border-stall-dim flex-1 ml-2'}
+                  type={'password'}
+                  onKeyPress={handleKeyPress}
+                />
+              </div>
+            ) : null}
             <div className={'my-2 float-right'}>
-              <button
-                tabIndex={4}
-                onClick={doLogin}
-                className={
-                  'px-5 py-1 bg-green text-white focus:opacity-75 hover:opacity-75'
-                }>
-                Login
-              </button>
+              {state.userWantToRegister ? (
+                <button
+                  tabIndex={4}
+                  onClick={doRegister}
+                  className={
+                    'px-5 py-1 bg-green text-white focus:opacity-75 hover:opacity-75'
+                  }>
+                  Register
+                </button>
+              ) : (
+                <button
+                  tabIndex={4}
+                  onClick={doLogin}
+                  className={
+                    'px-5 py-1 bg-green text-white focus:opacity-75 hover:opacity-75'
+                  }>
+                  Login
+                </button>
+              )}
             </div>
           </div>
-          <div className={'p-3 text-tomato'}>{uiState.errorMessage}</div>
+          {uiState.errorMessage ? (
+            <div className={'p-3 text-tomato'}>{uiState.errorMessage}</div>
+          ) : uiState.successMessage ? (
+            <div className={'p-3 text-green'}>{uiState.successMessage}</div>
+          ) : null}
           <div className={'p-3'}>
-            After login, your data will be automatically synced to the server.
+            {state.userWantToRegister
+              ? ''
+              : 'After login, your data will be automatically synced to the server.'}
             <br />
-            Press <code>ESC</code> key to cancel login and close this dialog.
+            Press <code>ESC</code> key to cancel and close this dialog.
           </div>
         </>
       ) : null}
