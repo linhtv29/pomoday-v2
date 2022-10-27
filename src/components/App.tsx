@@ -318,6 +318,10 @@ export const App = () => {
     }
   };
 
+  const visibleTasks = () => {
+    return state.tasks.filter(task => task.status != TaskStatus.NONE);
+  };
+
   useEventListener('keydown', processHotKey);
 
   return (
@@ -389,7 +393,7 @@ export const App = () => {
                   customClass={'text-sm'}
                   type={RowType.TEXT}
                   text={`${(
-                    (summary.done / state.tasks.length) * 100 || 0
+                    (summary.done / visibleTasks().length) * 100 || 0
                   ).toFixed(0)}% of all tasks complete.`}
                 />
                 <Row
